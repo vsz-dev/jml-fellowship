@@ -511,6 +511,31 @@
   footer .foot-verse { color: var(--gold-soft); font-family: var(--font-display); font-style: italic; margin-bottom: 8px; font-size: 0.98rem; text-align: center; }
   footer .foot-copy { text-align: center; margin: 0; color: var(--text-muted-on-navy); font-size: 0.8rem; }
 
+  .inspiration-list { display: flex; flex-direction: column; gap: 18px; max-width: 720px; margin: 0 auto; }
+.inspiration-card {
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 26px 28px;
+}
+.inspiration-message {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--text-on-paper);
+  margin: 0 0 10px;
+}
+.inspiration-author { font-size: 0.85rem; color: var(--text-muted-on-paper); margin: 0; }
+
+.whatsapp-btn {
+  display: block;
+  width: fit-content;
+  margin: 18px auto 0;
+  color: var(--text-on-paper);
+  border-color: var(--line);
+}
+.whatsapp-btn:hover { border-color: var(--navy); color: var(--navy); }
+
   ::selection { background: var(--gold); color: var(--ink); }
   .signup { background: var(--paper-2); }
 .signup-form { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }

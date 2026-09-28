@@ -30,6 +30,22 @@ async function loadWordOfMonth() {
     .join('')
 }
 
+async function loadInspirations() {
+  const { data, error } = await supabase
+    .from('inspirations')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (error || !data || data.length === 0) return
+
+  const container = document.getElementById('inspirationList')
+  container.innerHTML = data.map(function (i) {
+    const author = i.author ? '<p class="inspiration-author">&mdash; ' + i.author + '</p>' : ''
+    return '<div class="inspiration-card"><p class="inspiration-message">&ldquo;' + i.message + '&rdquo;</p>' + author + '</div>'
+  }).join('')
+}
+
 // live weekly prayer points from Supabase
 async function loadPrayerPoints() {
   const { data, error } = await supabase
@@ -75,3 +91,4 @@ if (signupForm) {
 
 loadWordOfMonth()
 loadPrayerPoints()
+loadInspirations()
