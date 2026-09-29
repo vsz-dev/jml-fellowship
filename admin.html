@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Jesus My Light Fellowship</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+
+<div class="admin-wrap">
+  <div class="admin-brand">
+    <img src="/logo.png" alt="Jesus My Light Fellowship logo">
+    <span>Jesus My Light Fellowship — Admin</span>
+  </div>
+
+  <div id="loginSection" class="admin-card">
+    <h2>Log in</h2>
+    <form id="loginForm">
+      <label>Email<input type="email" id="loginEmail" required></label>
+      <label>Password<input type="password" id="loginPassword" required></label>
+      <button type="submit" class="btn btn-gold">Log in</button>
+      <p class="admin-note" id="loginNote"></p>
+    </form>
+  </div>
+
+  <div id="dashboardSection" class="admin-card" style="display:none;">
+    <div class="admin-header-row">
+      <h2>Add an inspiration</h2>
+      <button id="logoutBtn" class="btn-outline-dark">Log out</button>
+    </div>
+    <form id="inspirationForm">
+      <label>Message<textarea id="inspMessage" rows="4" required placeholder="Type the inspiration..."></textarea></label>
+      <label>Signed by (optional)<input type="text" id="inspAuthor" placeholder="e.g. Pastor John"></label>
+      <button type="submit" class="btn btn-gold">Post inspiration</button>
+      <p class="admin-note" id="inspNote"></p>
+    </form>
+
+    <h3 class="admin-subheading">Recently posted</h3>
+    <div id="recentList" class="recent-list"></div>
+  </div>
+</div>
+
+<script type="module" src="/src/admin.js"></script>
+</body>
+</html>
