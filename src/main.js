@@ -30,6 +30,78 @@ async function loadWordOfMonth() {
     .join('')
 }
 
+// ---------- Dated prayer archive ----------
+let weekDates = []
+let currentWeekIndex = 0
+
+function formatWeekDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+async function loadWeekDates() {
+  const { data, error } = await supabase
+    .from('prayer_points')
+    .select('week_of')
+    .eq('category', 'week')
+    .order('week_of', { ascending: false })
+
+  if (error || !data) return []
+  return [...new Set(data.map(function (d) { return d.week_of }))]
+}
+
+async function loadPrayerPointsForWeek(weekOf) {
+  const { data, error } = await supabase
+    .from('prayer_points')
+    .select('*')
+    .eq('category', 'week')
+    .eq('week_of', weekOf)
+    .order('sort_order', { ascending: true })
+
+  if (error || !data || data.length === 0) return
+
+  const container = document.getElementById('week')
+  container.innerHTML = data.map(function (p) {
+    const ref = p.scripture_ref ? '<span class="scripture">' + p.scripture_ref + '</span>' : ''
+    return '<div class="prayer-item"><p>' + p.point + ref + '</p></div>'
+  }).join('')
+
+  document.getElementById('weekDateLabel').textContent = formatWeekDate(weekOf)
+}
+
+function updateWeekNavButtons() {
+  document.getElementById('prevWeekBtn').disabled = currentWeekIndex >= weekDates.length - 1
+  document.getElementById('nextWeekBtn').disabled = currentWeekIndex <= 0
+}
+
+async function initPrayerArchive() {
+  weekDates = await loadWeekDates()
+  if (weekDates.length === 0) {
+    document.getElementById('weekDateLabel').textContent = ''
+    return
+  }
+  currentWeekIndex = 0
+  await loadPrayerPointsForWeek(weekDates[currentWeekIndex])
+  updateWeekNavButtons()
+}
+
+document.getElementById('prevWeekBtn').addEventListener('click', async function () {
+  if (currentWeekIndex < weekDates.length - 1) {
+    currentWeekIndex++
+    await loadPrayerPointsForWeek(weekDates[currentWeekIndex])
+    updateWeekNavButtons()
+  }
+})
+
+document.getElementById('nextWeekBtn').addEventListener('click', async function () {
+  if (currentWeekIndex > 0) {
+    currentWeekIndex--
+    await loadPrayerPointsForWeek(weekDates[currentWeekIndex])
+    updateWeekNavButtons()
+  }
+})
+
+// live inspirations from Supabase
 async function loadInspirations() {
   const { data, error } = await supabase
     .from('inspirations')
@@ -43,23 +115,6 @@ async function loadInspirations() {
   container.innerHTML = data.map(function (i) {
     const author = i.author ? '<p class="inspiration-author">&mdash; ' + i.author + '</p>' : ''
     return '<div class="inspiration-card"><p class="inspiration-message">&ldquo;' + i.message + '&rdquo;</p>' + author + '</div>'
-  }).join('')
-}
-
-// live weekly prayer points from Supabase
-async function loadPrayerPoints() {
-  const { data, error } = await supabase
-    .from('prayer_points')
-    .select('*')
-    .eq('category', 'week')
-    .order('sort_order', { ascending: true })
-
-  if (error || !data || data.length === 0) return
-
-  const container = document.getElementById('week')
-  container.innerHTML = data.map(function (p) {
-    const ref = p.scripture_ref ? '<span class="scripture">' + p.scripture_ref + '</span>' : ''
-    return '<div class="prayer-item"><p>' + p.point + ref + '</p></div>'
   }).join('')
 }
 
@@ -90,5 +145,5 @@ if (signupForm) {
 }
 
 loadWordOfMonth()
-loadPrayerPoints()
+initPrayerArchive()
 loadInspirations()
