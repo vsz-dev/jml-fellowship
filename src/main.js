@@ -11,7 +11,7 @@ document.querySelectorAll('#navLinks a').forEach(function (a) {
   })
 })
 
-// live word of the month from Supabase
+// ---------- Word of the month ----------
 async function loadWordOfMonth() {
   const { data, error } = await supabase
     .from('word_of_month')
@@ -101,7 +101,7 @@ document.getElementById('nextWeekBtn').addEventListener('click', async function 
   }
 })
 
-// live inspirations from Supabase
+// ---------- Inspirations ----------
 async function loadInspirations() {
   const { data, error } = await supabase
     .from('inspirations')
@@ -118,7 +118,7 @@ async function loadInspirations() {
   }).join('')
 }
 
-// Join Fellowship sign-up form
+// ---------- Join Fellowship sign-up form ----------
 const signupForm = document.getElementById('signupForm')
 if (signupForm) {
   signupForm.addEventListener('submit', async function (e) {

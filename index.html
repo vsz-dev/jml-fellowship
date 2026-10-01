@@ -14,11 +14,11 @@
 <header class="site-nav">
   <div class="nav-inner">
     <a class="brand" href="#top">
-  <img src="/logo.png" alt="Jesus My Light Fellowship logo" class="brand-logo">
-  <span class="brand-text">
-    <span class="brand-title">Jesus My Light<br>Fellowship</span>
-    <span class="brand-tagline">The Winning Family</span>
-  </span>
+      <img src="/logo.png" alt="Jesus My Light Fellowship logo" class="brand-logo">
+      <span class="brand-text">
+        <span class="brand-title">Jesus My Light<br>Fellowship</span>
+        <span class="brand-tagline">The Winning Family</span>
+      </span>
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">Menu</button>
     <nav class="links" id="navLinks">
@@ -29,7 +29,7 @@
       <a href="#about">Fellowship</a>
       <a href="#join">Events</a>
     </nav>
-    <a class="nav-cta" href="#join">Join Fellowship</a>
+    <a class="nav-cta" href="#signup">Join Fellowship</a>
   </div>
 </header>
 
@@ -40,8 +40,8 @@
       <p class="eyebrow-script">Welcome to</p>
       <h1 class="hero-title">Jesus My Light Fellowship</h1>
       <div class="hero-divider"></div>
-      <p class="hero-verse">John 8:12</p>
-      <p class="hero-quote">&ldquo;Then spake Jesus again unto them, saying, I am the light of the world: he that followeth me shall not walk in darkness, but shall have the light of life.&rdquo;</p>
+      <p class="hero-verse">John 8:32</p>
+      <p class="hero-quote">&ldquo;You shall know the truth, and the truth shall make you free.&rdquo;</p>
       <p class="hero-sub">Growing together in prayer, the Word, and victorious living.</p>
       <div class="hero-actions">
         <a class="btn btn-white" href="#prayer">🙏 Prayer Altar</a>
@@ -53,10 +53,10 @@
     </div>
   </div>
   <div class="hero-strip wrap">
-  <div><strong>Tuesdays</strong> &nbsp;Prayer altar &middot; 8:00 PM</div>
-  <div><strong>Fridays</strong> &nbsp;Word session &middot; 8:00 PM</div>
-  <div><strong>Sundays</strong> &nbsp;Bible quiz &middot; 8:00 PM</div>
-</div>
+    <div><strong>Tuesdays</strong> &nbsp;Prayer altar &middot; 8:00 PM</div>
+    <div><strong>Fridays</strong> &nbsp;Word session &middot; 8:00 PM</div>
+    <div><strong>Sundays</strong> &nbsp;Bible quiz &middot; 8:00 PM</div>
+  </div>
 </section>
 
 <section id="word">
@@ -95,23 +95,16 @@
     <div class="section-head">
       <p class="kicker">At the altar</p>
       <h2 class="section-title">Prayer points</h2>
-      <p class="section-desc">What we're bringing before God this week, together.</p>
+      <p class="section-desc">What we're bringing before God, together.</p>
     </div>
 
-    <div class="prayer-grid active" id="week">
-      <div class="prayer-item">
-        <p>Thanksgiving &mdash; for life, health and the gift of another day to serve God.<span class="scripture">Psalm 118:24</span></p>
-      </div>
-      <div class="prayer-item">
-        <p>For hearts to hear and hold on to God's word, not just this month but every day.<span class="scripture">James 1:22</span></p>
-      </div>
-      <div class="prayer-item">
-        <p>For every family in the fellowship &mdash; peace in the home and unity in the marriage.<span class="scripture">Joshua 24:15</span></p>
-      </div>
-      <div class="prayer-item">
-        <p>For those who are sick or weary, that God would restore strength and health.<span class="scripture">Jeremiah 30:17</span></p>
-      </div>
+    <div class="prayer-nav">
+      <button id="prevWeekBtn" class="week-nav-btn" aria-label="Older week">&larr;</button>
+      <p class="prayer-week-label" id="weekDateLabel">Loading...</p>
+      <button id="nextWeekBtn" class="week-nav-btn" aria-label="Newer week">&rarr;</button>
     </div>
+
+    <div class="prayer-grid active" id="week"></div>
   </div>
 </section>
 
@@ -171,7 +164,6 @@
       <p class="section-desc">Tell us who you are, and we'll reach out to you on WhatsApp.</p>
     </div>
     <form class="signup-form" id="signupForm">
-      <a class="btn btn-outline whatsapp-btn" href="https://chat.whatsapp.com/KPoFibORXQQGM5i8ZgZPbC" target="_blank" rel="noopener">💬 Join our WhatsApp Group</a>
       <label>
         Full name
         <input type="text" id="signupName" required placeholder="Your full name">
@@ -183,6 +175,7 @@
       <button type="submit" class="btn btn-gold">Submit &amp; message us on WhatsApp</button>
       <p class="signup-note" id="signupNote"></p>
     </form>
+    <a class="btn btn-outline whatsapp-btn" href="https://chat.whatsapp.com/KPoFibORXQQGM5i8ZgZPbC" target="_blank" rel="noopener">💬 Join our WhatsApp Group</a>
   </div>
 </section>
 
@@ -207,7 +200,7 @@
       </a>
     </div>
   </div>
-  <p class="foot-verse">&ldquo;Then spake Jesus again unto them, saying, I am the light of the world: he that followeth me shall not walk in darkness, but shall have the light of life.&rdquo; &mdash; John 8:12</p>
+  <p class="foot-verse">&ldquo;And you shall know the truth, and the truth shall make you free.&rdquo; &mdash; John 8:32</p>
   <p class="foot-copy">&copy; 2026 Jesus My Light Fellowship. All rights reserved.</p>
 </footer>
 
