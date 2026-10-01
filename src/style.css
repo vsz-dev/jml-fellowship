@@ -107,6 +107,19 @@
     transition: color 0.2s ease;
   }
   nav.links a:hover, nav.links a:focus-visible { color: var(--gold-soft); }
+  .nav-link-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted-on-navy);
+    font-family: var(--font-body);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+  }
+  .nav-link-btn:hover, .nav-link-btn:focus-visible { color: var(--gold-soft); }
   .nav-cta {
     background: var(--accent-blue);
     color: #fff;
@@ -528,22 +541,64 @@
   }
   .whatsapp-btn:hover { border-color: var(--navy); color: var(--navy); }
 
-  /* ---------- INSPIRATION ---------- */
-  .inspiration-list { display: flex; flex-direction: column; gap: 18px; max-width: 720px; margin: 0 auto; }
+  /* ---------- INSPIRATION (horizontal scroll) ---------- */
+  .inspiration-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 12px; }
+  .inspiration-list { display: flex; flex-direction: row; gap: 20px; width: max-content; margin: 0 auto; }
   .inspiration-card {
     background: var(--paper-2);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 26px 28px;
+    flex: 0 0 320px;
+    max-width: 85vw;
   }
   .inspiration-message {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.1rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
     color: var(--text-on-paper);
-    margin: 0 0 10px;
   }
+  .inspiration-message p { margin: 0 0 12px; }
+  .inspiration-message p:last-child { margin-bottom: 10px; }
   .inspiration-author { font-size: 0.85rem; color: var(--text-muted-on-paper); margin: 0; }
+
+  /* ---------- MODALS ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3,29,75,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--navy);
+    color: var(--text-on-navy);
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid rgba(215,172,87,0.25);
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none;
+    border: none;
+    color: var(--text-on-navy);
+    font-size: 1.6rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .modal-title { font-family: var(--font-display); font-size: 1.4rem; margin: 0 0 18px; color: var(--gold-soft); padding-right: 20px; }
+  .modal-body { color: var(--text-muted-on-navy); line-height: 1.65; }
+  .modal-body p { margin: 0 0 14px; }
 
   /* ---------- ADMIN PAGE ---------- */
   .admin-body { background: var(--ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
@@ -562,7 +617,15 @@
   .btn-outline-dark { background: transparent; border: 1px solid rgba(215,172,87,0.4); color: var(--text-on-navy); padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
   .admin-subheading { margin-top: 30px; font-family: var(--font-display); font-size: 1.05rem; }
   .recent-list { display: flex; flex-direction: column; gap: 10px; }
-  .recent-item { padding: 10px 14px; border: 1px solid rgba(215,172,87,0.2); border-radius: 10px; font-size: 0.9rem; color: var(--text-muted-on-navy); }
+  .recent-item { padding: 10px 14px; border: 1px solid rgba(215,172,87,0.2); border-radius: 10px; font-size: 0.9rem; color: var(--text-muted-on-navy); display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .recent-item-text { flex: 1; }
+  .recent-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .recent-item-actions button { background: none; border: 1px solid rgba(215,172,87,0.3); color: var(--gold-soft); border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; }
+  .admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .admin-tab-btn { background: transparent; border: 1px solid rgba(215,172,87,0.3); color: var(--text-muted-on-navy); padding: 8px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+  .admin-tab-btn.active { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
 
   /* ---------- BRAND SUBTEXT (nav) ---------- */
   .brand-text { display: flex; flex-direction: column; }

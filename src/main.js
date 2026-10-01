@@ -11,6 +11,17 @@ document.querySelectorAll('#navLinks a').forEach(function (a) {
   })
 })
 
+// turn plain text (with blank-line paragraphs and single-line breaks) into clean HTML
+function formatParagraphs(text) {
+  if (!text) return ''
+  return text
+    .split(/\n\s*\n/)
+    .map(function (para) {
+      return '<p>' + para.trim().replace(/\n/g, '<br>') + '</p>'
+    })
+    .join('')
+}
+
 // ---------- Word of the month ----------
 async function loadWordOfMonth() {
   const { data, error } = await supabase
@@ -24,10 +35,7 @@ async function loadWordOfMonth() {
   document.getElementById('wordMonth').textContent = data.month_label
   document.getElementById('wordTitle').textContent = data.title
   document.getElementById('wordRef').textContent = data.scripture_ref
-  document.getElementById('wordBody').innerHTML = data.body
-    .split(/\n\s*\n/)
-    .map(function (paragraph) { return '<p>' + paragraph.trim() + '</p>' })
-    .join('')
+  document.getElementById('wordBody').innerHTML = formatParagraphs(data.body)
 }
 
 // ---------- Dated prayer archive ----------
@@ -101,22 +109,63 @@ document.getElementById('nextWeekBtn').addEventListener('click', async function 
   }
 })
 
-// ---------- Inspirations ----------
+// ---------- Inspirations (horizontal scroll, formatted text) ----------
 async function loadInspirations() {
   const { data, error } = await supabase
     .from('inspirations')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(5)
+    .limit(10)
 
   if (error || !data || data.length === 0) return
 
   const container = document.getElementById('inspirationList')
   container.innerHTML = data.map(function (i) {
     const author = i.author ? '<p class="inspiration-author">&mdash; ' + i.author + '</p>' : ''
-    return '<div class="inspiration-card"><p class="inspiration-message">&ldquo;' + i.message + '&rdquo;</p>' + author + '</div>'
+    return '<div class="inspiration-card"><div class="inspiration-message">' + formatParagraphs(i.message) + '</div>' + author + '</div>'
   }).join('')
 }
+
+// ---------- Purpose & Vision / Announcement modals ----------
+let siteContent = {}
+
+async function loadSiteContent() {
+  const { data, error } = await supabase.from('site_content').select('*')
+  if (error || !data) return
+  data.forEach(function (row) { siteContent[row.key] = row })
+}
+
+function openModal(key, modalId, titleId, bodyId, defaultTitle) {
+  const content = siteContent[key]
+  document.getElementById(titleId).textContent = (content && content.title) ? content.title : defaultTitle
+  document.getElementById(bodyId).innerHTML = (content && content.body)
+    ? formatParagraphs(content.body)
+    : '<p>Nothing posted yet. Check back soon.</p>'
+  document.getElementById(modalId).classList.add('active')
+}
+
+function closeModal(modalEl) {
+  modalEl.classList.remove('active')
+}
+
+document.getElementById('purposeNavBtn').addEventListener('click', function () {
+  openModal('purpose_vision', 'purposeModal', 'purposeModalTitle', 'purposeModalBody', 'Purpose & Vision')
+  document.getElementById('navLinks').classList.remove('open')
+})
+document.getElementById('announcementNavBtn').addEventListener('click', function () {
+  openModal('announcement', 'announcementModal', 'announcementModalTitle', 'announcementModalBody', 'Announcement')
+  document.getElementById('navLinks').classList.remove('open')
+})
+document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    closeModal(btn.closest('.modal-overlay'))
+  })
+})
+document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal(overlay)
+  })
+})
 
 // ---------- Join Fellowship sign-up form ----------
 const signupForm = document.getElementById('signupForm')
@@ -147,3 +196,4 @@ if (signupForm) {
 loadWordOfMonth()
 initPrayerArchive()
 loadInspirations()
+loadSiteContent()

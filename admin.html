@@ -29,18 +29,63 @@
 
   <div id="dashboardSection" class="admin-card" style="display:none;">
     <div class="admin-header-row">
-      <h2>Add an inspiration</h2>
+      <h2>Manage content</h2>
       <button id="logoutBtn" class="btn-outline-dark">Log out</button>
     </div>
-    <form id="inspirationForm">
-      <label>Message<textarea id="inspMessage" rows="4" required placeholder="Type the inspiration..."></textarea></label>
-      <label>Signed by (optional)<input type="text" id="inspAuthor" placeholder="e.g. Pastor John"></label>
-      <button type="submit" class="btn btn-gold">Post inspiration</button>
-      <p class="admin-note" id="inspNote"></p>
-    </form>
 
-    <h3 class="admin-subheading">Recently posted</h3>
-    <div id="recentList" class="recent-list"></div>
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-panel="inspirationPanel">Inspiration</button>
+      <button class="admin-tab-btn" data-panel="wordPanel">Word of the Month</button>
+      <button class="admin-tab-btn" data-panel="purposePanel">Purpose &amp; Vision</button>
+      <button class="admin-tab-btn" data-panel="announcementPanel">Announcement</button>
+    </div>
+
+    <!-- INSPIRATION PANEL -->
+    <div class="admin-panel active" id="inspirationPanel">
+      <form id="inspirationForm">
+        <label>Message<textarea id="inspMessage" rows="5" required placeholder="Type the inspiration. Leave a blank line between paragraphs."></textarea></label>
+        <label>Signed by (optional)<input type="text" id="inspAuthor" placeholder="e.g. Pastor John"></label>
+        <button type="submit" class="btn btn-gold" id="inspSubmitBtn">Post inspiration</button>
+        <button type="button" class="btn-outline-dark" id="inspCancelEditBtn" style="display:none;">Cancel edit</button>
+        <p class="admin-note" id="inspNote"></p>
+      </form>
+
+      <h3 class="admin-subheading">Recently posted</h3>
+      <div id="recentList" class="recent-list"></div>
+    </div>
+
+    <!-- WORD OF THE MONTH PANEL -->
+    <div class="admin-panel" id="wordPanel">
+      <form id="wordForm">
+        <label>Month label<input type="text" id="wordMonthInput" required placeholder="e.g. October 2026"></label>
+        <label>Title<input type="text" id="wordTitleInput" required placeholder="e.g. Walking in the truth that sets free"></label>
+        <label>Scripture reference<input type="text" id="wordRefInput" required placeholder="e.g. John 8:31–36"></label>
+        <label>Full teaching text<textarea id="wordBodyInput" rows="8" required placeholder="Leave a blank line between paragraphs."></textarea></label>
+        <button type="submit" class="btn btn-gold">Save word of the month</button>
+        <p class="admin-note" id="wordNote"></p>
+      </form>
+    </div>
+
+    <!-- PURPOSE & VISION PANEL -->
+    <div class="admin-panel" id="purposePanel">
+      <form id="purposeForm">
+        <label>Title<input type="text" id="purposeTitleInput" placeholder="e.g. Our Purpose & Vision"></label>
+        <label>Content<textarea id="purposeBodyInput" rows="8" placeholder="Leave a blank line between paragraphs."></textarea></label>
+        <button type="submit" class="btn btn-gold">Save Purpose &amp; Vision</button>
+        <p class="admin-note" id="purposeNote"></p>
+      </form>
+    </div>
+
+    <!-- ANNOUNCEMENT PANEL -->
+    <div class="admin-panel" id="announcementPanel">
+      <form id="announcementForm">
+        <label>Title<input type="text" id="announcementTitleInput" placeholder="e.g. This Sunday"></label>
+        <label>Content<textarea id="announcementBodyInput" rows="8" placeholder="Leave a blank line between paragraphs."></textarea></label>
+        <button type="submit" class="btn btn-gold">Save Announcement</button>
+        <p class="admin-note" id="announcementNote"></p>
+      </form>
+    </div>
+
   </div>
 </div>
 

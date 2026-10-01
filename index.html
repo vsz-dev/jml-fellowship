@@ -27,6 +27,8 @@
       <a href="#inspiration">Inspiration</a>
       <a href="#prayer">Prayer Altar</a>
       <a href="#about">Fellowship</a>
+      <button type="button" class="nav-link-btn" id="purposeNavBtn">Purpose &amp; Vision</button>
+      <button type="button" class="nav-link-btn" id="announcementNavBtn">Announcement</button>
       <a href="#join">Events</a>
     </nav>
     <a class="nav-cta" href="#signup">Join Fellowship</a>
@@ -86,7 +88,9 @@
       <h2 class="section-title">Inspiration</h2>
       <p class="section-desc">Words dropped by the fellowship to encourage and strengthen you.</p>
     </div>
-    <div class="inspiration-list" id="inspirationList"></div>
+    <div class="inspiration-scroll">
+      <div class="inspiration-list" id="inspirationList"></div>
+    </div>
   </div>
 </section>
 
@@ -203,6 +207,22 @@
   <p class="foot-verse">&ldquo;And you shall know the truth, and the truth shall make you free.&rdquo; &mdash; John 8:32</p>
   <p class="foot-copy">&copy; 2026 Jesus My Light Fellowship. All rights reserved.</p>
 </footer>
+
+<div class="modal-overlay" id="purposeModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <h3 class="modal-title" id="purposeModalTitle">Purpose &amp; Vision</h3>
+    <div class="modal-body" id="purposeModalBody">Loading...</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="announcementModal">
+  <div class="modal-box">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <h3 class="modal-title" id="announcementModalTitle">Announcement</h3>
+    <div class="modal-body" id="announcementModalBody">Loading...</div>
+  </div>
+</div>
 
 <script type="module" src="/src/main.js"></script>
 </body>
