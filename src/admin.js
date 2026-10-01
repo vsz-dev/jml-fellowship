@@ -80,9 +80,14 @@ document.getElementById('inspirationForm').addEventListener('submit', async func
     return
   }
 
+  const wasNew = !editingInspirationId
   note.textContent = editingInspirationId ? 'Updated!' : 'Posted! It will now show on the website.'
   cancelInspirationEdit()
   loadRecentInspirations()
+
+  if (wasNew) {
+    sendNotification('New Inspiration — JML Fellowship', message.slice(0, 120), '/#inspiration')
+  }
 })
 
 document.getElementById('inspCancelEditBtn').addEventListener('click', cancelInspirationEdit)
@@ -178,6 +183,10 @@ document.getElementById('wordForm').addEventListener('submit', async function (e
   }
 
   note.textContent = error ? 'Something went wrong: ' + error.message : 'Saved! It will now show on the website.'
+
+  if (!error) {
+    sendNotification('Word of the Month Updated — JML Fellowship', payload.title, '/#word')
+  }
 })
 
 // ---------- Purpose & Vision / Announcement (shared logic) ----------
@@ -198,6 +207,7 @@ async function saveSiteContent(key, titleFieldId, bodyFieldId, noteId) {
   }
   const { error } = await supabase.from('site_content').upsert(payload, { onConflict: 'key' })
   note.textContent = error ? 'Something went wrong: ' + error.message : 'Saved! It will now show on the website.'
+  return error
 }
 
 document.getElementById('purposeForm').addEventListener('submit', async function (e) {
@@ -207,7 +217,27 @@ document.getElementById('purposeForm').addEventListener('submit', async function
 
 document.getElementById('announcementForm').addEventListener('submit', async function (e) {
   e.preventDefault()
-  await saveSiteContent('announcement', 'announcementTitleInput', 'announcementBodyInput', 'announcementNote')
+  const error = await saveSiteContent('announcement', 'announcementTitleInput', 'announcementBodyInput', 'announcementNote')
+  if (!error) {
+    const title = document.getElementById('announcementTitleInput').value.trim() || 'New Announcement'
+    sendNotification('Announcement — JML Fellowship', title, '/')
+  }
 })
+
+// ---------- Trigger push notification ----------
+async function sendNotification(title, body, url) {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-notification', {
+      body: { title: title, body: body, url: url || '/' }
+    })
+    if (error) {
+      console.error('Notification send failed:', error)
+    } else {
+      console.log('Notification result:', data)
+    }
+  } catch (e) {
+    console.error('Notification send failed:', e)
+  }
+}
 
 checkSession()
