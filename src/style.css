@@ -277,6 +277,8 @@
     transition: transform 0.15s ease, background 0.2s ease;
   }
   .btn:hover { transform: translateY(-1px); }
+  button.btn { font-family: var(--font-body); cursor: pointer; }
+  .btn:disabled { opacity: 0.55; cursor: default; transform: none; }
   .btn-white { background: #fff; color: var(--navy); }
   .btn-white:hover { background: var(--gold-soft); }
   .btn-outline {

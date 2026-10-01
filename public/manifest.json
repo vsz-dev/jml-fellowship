@@ -1,0 +1,13 @@
+{
+  "name": "Jesus My Light Fellowship",
+  "short_name": "JML Fellowship",
+  "description": "Prayer, the Word, and the Winning Family",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#031d4b",
+  "theme_color": "#06368a",
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
