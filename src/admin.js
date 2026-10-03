@@ -21,6 +21,8 @@ function showDashboard() {
   loadWordOfMonthIntoForm()
   loadSiteContentIntoForm('purpose_vision', 'purposeTitleInput', 'purposeBodyInput')
   loadSiteContentIntoForm('announcement', 'announcementTitleInput', 'announcementBodyInput')
+  loadRequests()
+  loadSignups()
 }
 
 document.getElementById('loginForm').addEventListener('submit', async function (e) {
@@ -238,6 +240,70 @@ async function sendNotification(title, body, url) {
   } catch (e) {
     console.error('Notification send failed:', e)
   }
+}
+
+// ---------- Member Requests (read-only) ----------
+async function loadRequests() {
+  const { data, error } = await supabase
+    .from('member_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(30)
+
+  const container = document.getElementById('requestsList')
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="admin-note">No requests yet.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (r) {
+    const name = r.name ? r.name : 'Anonymous'
+    const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    return '<div class="recent-item">' +
+      '<div class="recent-item-text"><strong>' + name + '</strong> &middot; ' + date + '<br>' + r.request + '</div>' +
+      '<div class="recent-item-actions"><button data-delete-request-id="' + r.id + '">Delete</button></div>' +
+    '</div>'
+  }).join('')
+
+  document.querySelectorAll('[data-delete-request-id]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      if (!confirm('Delete this request?')) return
+      await supabase.from('member_requests').delete().eq('id', btn.dataset.deleteRequestId)
+      loadRequests()
+    })
+  })
+}
+
+// ---------- Sign-ups (read-only) ----------
+const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+async function loadSignups() {
+  const { data, error } = await supabase
+    .from('signups')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const container = document.getElementById('signupsList')
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="admin-note">No sign-ups yet.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (s) {
+    const dob = (s.dob_month && s.dob_day) ? (MONTH_NAMES[s.dob_month] + ' ' + s.dob_day) : 'Not provided'
+    const scripture = s.favorite_scripture ? s.favorite_scripture : 'Not provided'
+    const email = s.email ? s.email : 'Not provided'
+    return '<div class="recent-item">' +
+      '<div class="recent-item-text">' +
+        '<strong>' + s.full_name + '</strong><br>' +
+        'WhatsApp: ' + s.whatsapp_number + '<br>' +
+        'Email: ' + email + '<br>' +
+        'Birthday: ' + dob + '<br>' +
+        'Favourite scripture: ' + scripture +
+      '</div>' +
+    '</div>'
+  }).join('')
 }
 
 checkSession()

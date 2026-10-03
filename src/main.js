@@ -109,7 +109,10 @@ document.getElementById('nextWeekBtn').addEventListener('click', async function 
   }
 })
 
-// ---------- Inspirations (horizontal scroll, formatted text) ----------
+// ---------- Inspirations (horizontal scroll, click to open) ----------
+let inspirationsById = {}
+let currentInspirationId = null
+
 async function loadInspirations() {
   const { data, error } = await supabase
     .from('inspirations')
@@ -119,12 +122,147 @@ async function loadInspirations() {
 
   if (error || !data || data.length === 0) return
 
+  inspirationsById = {}
+  data.forEach(function (i) { inspirationsById[i.id] = i })
+
   const container = document.getElementById('inspirationList')
   container.innerHTML = data.map(function (i) {
     const author = i.author ? '<p class="inspiration-author">&mdash; ' + i.author + '</p>' : ''
-    return '<div class="inspiration-card"><div class="inspiration-message">' + formatParagraphs(i.message) + '</div>' + author + '</div>'
+    return '<div class="inspiration-card" data-inspiration-id="' + i.id + '">' +
+      '<div class="inspiration-message">' + formatParagraphs(i.message) + '</div>' +
+      author +
+      '<p class="inspiration-readmore">Click to open &rarr;</p>' +
+    '</div>'
+  }).join('')
+
+  document.querySelectorAll('.inspiration-card').forEach(function (card) {
+    card.addEventListener('click', function () {
+      openInspirationModal(card.dataset.inspirationId)
+    })
+  })
+}
+
+async function openInspirationModal(id) {
+  const insp = inspirationsById[id]
+  if (!insp) return
+
+  currentInspirationId = id
+  document.getElementById('inspModalAuthor').textContent = insp.author ? ('— ' + insp.author) : 'Inspiration'
+  document.getElementById('inspModalMessage').innerHTML = formatParagraphs(insp.message)
+  document.getElementById('inspirationModal').classList.add('active')
+
+  document.getElementById('commentForm').reset()
+  document.getElementById('requestForm').reset()
+  document.getElementById('commentNote').textContent = ''
+  document.getElementById('requestNote').textContent = ''
+
+  await loadReactionCounts(id)
+  await loadComments(id)
+}
+
+// ---------- Reactions ----------
+async function loadReactionCounts(inspirationId) {
+  const { data, error } = await supabase
+    .from('inspiration_reactions')
+    .select('reaction_type')
+    .eq('inspiration_id', inspirationId)
+
+  const counts = { like: 0, heart: 0, amen: 0 }
+  if (!error && data) {
+    data.forEach(function (r) {
+      if (counts[r.reaction_type] !== undefined) counts[r.reaction_type]++
+    })
+  }
+
+  document.getElementById('countLike').textContent = counts.like
+  document.getElementById('countHeart').textContent = counts.heart
+  document.getElementById('countAmen').textContent = counts.amen
+}
+
+document.querySelectorAll('.reaction-btn').forEach(function (btn) {
+  btn.addEventListener('click', async function () {
+    if (!currentInspirationId) return
+    const type = btn.dataset.reaction
+
+    const storageKey = 'reacted_' + currentInspirationId + '_' + type
+    if (localStorage.getItem(storageKey)) {
+      return // already reacted this way on this device
+    }
+
+    const { error } = await supabase
+      .from('inspiration_reactions')
+      .insert({ inspiration_id: currentInspirationId, reaction_type: type })
+
+    if (!error) {
+      try { localStorage.setItem(storageKey, 'true') } catch (e) {}
+      btn.classList.add('reacted')
+      await loadReactionCounts(currentInspirationId)
+    }
+  })
+})
+
+// ---------- Comments ----------
+async function loadComments(inspirationId) {
+  const { data, error } = await supabase
+    .from('inspiration_comments')
+    .select('*')
+    .eq('inspiration_id', inspirationId)
+    .order('created_at', { ascending: true })
+
+  const container = document.getElementById('commentList')
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="comment-empty">No comments yet. Be the first to share a thought.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (c) {
+    return '<div class="comment-item"><p class="comment-name">' + c.name + '</p><p class="comment-text">' + c.comment + '</p></div>'
   }).join('')
 }
+
+document.getElementById('commentForm').addEventListener('submit', async function (e) {
+  e.preventDefault()
+  if (!currentInspirationId) return
+
+  const name = document.getElementById('commentName').value.trim()
+  const comment = document.getElementById('commentText').value.trim()
+  const note = document.getElementById('commentNote')
+
+  const { error } = await supabase
+    .from('inspiration_comments')
+    .insert({ inspiration_id: currentInspirationId, name: name, comment: comment })
+
+  if (error) {
+    note.textContent = 'Something went wrong. Please try again.'
+    return
+  }
+
+  note.textContent = 'Comment posted!'
+  document.getElementById('commentForm').reset()
+  await loadComments(currentInspirationId)
+})
+
+// ---------- Requests ----------
+document.getElementById('requestForm').addEventListener('submit', async function (e) {
+  e.preventDefault()
+  if (!currentInspirationId) return
+
+  const name = document.getElementById('requestName').value.trim()
+  const request = document.getElementById('requestText').value.trim()
+  const note = document.getElementById('requestNote')
+
+  const { error } = await supabase
+    .from('member_requests')
+    .insert({ inspiration_id: currentInspirationId, name: name || null, request: request })
+
+  if (error) {
+    note.textContent = 'Something went wrong. Please try again.'
+    return
+  }
+
+  note.textContent = 'Thank you — your request has been sent to the fellowship.'
+  document.getElementById('requestForm').reset()
+})
 
 // ---------- Purpose & Vision / Announcement modals ----------
 let siteContent = {}
@@ -168,16 +306,37 @@ document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
 })
 
 // ---------- Join Fellowship sign-up form ----------
+const dobDaySelect = document.getElementById('signupDobDay')
+if (dobDaySelect) {
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement('option')
+    opt.value = d
+    opt.textContent = d
+    dobDaySelect.appendChild(opt)
+  }
+}
+
 const signupForm = document.getElementById('signupForm')
 if (signupForm) {
   signupForm.addEventListener('submit', async function (e) {
     e.preventDefault()
     const name = document.getElementById('signupName').value.trim()
+    const email = document.getElementById('signupEmail').value.trim()
     const whatsapp = document.getElementById('signupWhatsapp').value.trim()
+    const dobMonth = document.getElementById('signupDobMonth').value
+    const dobDay = document.getElementById('signupDobDay').value
+    const scripture = document.getElementById('signupScripture').value.trim()
 
     const { error } = await supabase
       .from('signups')
-      .insert({ full_name: name, whatsapp_number: whatsapp })
+      .insert({
+        full_name: name,
+        email: email,
+        whatsapp_number: whatsapp,
+        dob_month: dobMonth ? parseInt(dobMonth) : null,
+        dob_day: dobDay ? parseInt(dobDay) : null,
+        favorite_scripture: scripture || null
+      })
 
     if (error) {
       console.error('Signup save failed:', error)

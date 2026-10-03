@@ -45,13 +45,13 @@
       <p class="eyebrow-script">Welcome to</p>
       <h1 class="hero-title">Jesus My Light Fellowship</h1>
       <div class="hero-divider"></div>
-      <p class="hero-verse">John 8:32</p>
-      <p class="hero-quote">&ldquo;You shall know the truth, and the truth shall make you free.&rdquo;</p>
+      <p class="hero-verse">John 8:12</p>
+      <p class="hero-quote">&ldquo;Then spake Jesus again unto them, saying, I am the light of the world. Whoever follows me will never walk in darkness, but will have the light of life.&rdquo;</p>
       <p class="hero-sub">Growing together in prayer, the Word, and victorious living.</p>
       <div class="hero-actions">
         <a class="btn btn-white" href="#prayer">🙏 Prayer Altar</a>
         <a class="btn btn-outline" href="#word">📖 Study the Word</a>
-        <button type="button" class="btn btn-outline" id="enableNotifBtn">🔔 Enable Notification</button>
+        <button type="button" class="btn btn-outline" id="enableNotifBtn">🔔 Enable Alerts</button>
       </div>
     </div>
     <div class="hero-emblem-wrap">
@@ -90,13 +90,48 @@
     <div class="section-head">
       <p class="kicker">A word to carry</p>
       <h2 class="section-title">Inspiration</h2>
-      <p class="section-desc">Words dropped by the fellowship to encourage and strengthen you.</p>
+      <p class="section-desc">Words dropped by the fellowship to encourage and strengthen you. Click a card to read in full, react, comment, or send a request.</p>
     </div>
     <div class="inspiration-scroll">
       <div class="inspiration-list" id="inspirationList"></div>
     </div>
   </div>
 </section>
+
+<div class="modal-overlay" id="inspirationModal">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <h3 class="modal-title" id="inspModalAuthor">Inspiration</h3>
+    <div class="modal-body" id="inspModalMessage"></div>
+
+    <div class="reaction-row" id="reactionRow">
+      <button class="reaction-btn" data-reaction="like">👍 <span id="countLike">0</span></button>
+      <button class="reaction-btn" data-reaction="heart">❤️ <span id="countHeart">0</span></button>
+      <button class="reaction-btn" data-reaction="amen">🙏 <span id="countAmen">0</span></button>
+    </div>
+
+    <div class="modal-divider"></div>
+
+    <h4 class="modal-subheading">Comments</h4>
+    <div class="comment-list" id="commentList"></div>
+    <form class="comment-form" id="commentForm">
+      <input type="text" id="commentName" placeholder="Your name" required>
+      <textarea id="commentText" rows="2" placeholder="Leave a comment..." required></textarea>
+      <button type="submit" class="btn btn-gold btn-small">Post comment</button>
+      <p class="admin-note" id="commentNote"></p>
+    </form>
+
+    <div class="modal-divider"></div>
+
+    <h4 class="modal-subheading">Have a request on this word?</h4>
+    <form class="request-form" id="requestForm">
+      <input type="text" id="requestName" placeholder="Your name (optional)">
+      <textarea id="requestText" rows="2" placeholder="Share your request or prayer need..." required></textarea>
+      <button type="submit" class="btn btn-outline-modal btn-small">Send request</button>
+      <p class="admin-note" id="requestNote"></p>
+    </form>
+  </div>
+</div>
 
 <section id="prayer" class="about-band">
   <div class="wrap">
@@ -177,8 +212,42 @@
         <input type="text" id="signupName" required placeholder="Your full name">
       </label>
       <label>
+        Email address
+        <input type="email" id="signupEmail" required placeholder="you@example.com">
+      </label>
+      <label>
         WhatsApp number
         <input type="tel" id="signupWhatsapp" required placeholder="e.g. +2348012345678">
+      </label>
+      <div class="signup-dob-row">
+        <label>
+          Birthday &mdash; month
+          <select id="signupDobMonth" required>
+            <option value="">Month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </label>
+        <label>
+          Birthday &mdash; day
+          <select id="signupDobDay" required>
+            <option value="">Day</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        Favourite scripture <span class="optional-tag">(optional)</span>
+        <input type="text" id="signupScripture" placeholder="e.g. Philippians 4:13">
       </label>
       <button type="submit" class="btn btn-gold">Submit &amp; message us on WhatsApp</button>
       <p class="signup-note" id="signupNote"></p>
@@ -208,7 +277,7 @@
       </a>
     </div>
   </div>
-  <p class="foot-verse">&ldquo;And you shall know the truth, and the truth shall make you free.&rdquo; &mdash; John 8:32</p>
+  <p class="foot-verse">&ldquo;Then spake Jesus again unto them, saying, I am the light of the world. Whoever follows me will never walk in darkness, but will have the light of life.&rdquo; &mdash; John 8:12</p>
   <p class="foot-copy">&copy; 2026 Jesus My Light Fellowship. All rights reserved.</p>
 </footer>
 

@@ -38,6 +38,8 @@
       <button class="admin-tab-btn" data-panel="wordPanel">Word of the Month</button>
       <button class="admin-tab-btn" data-panel="purposePanel">Purpose &amp; Vision</button>
       <button class="admin-tab-btn" data-panel="announcementPanel">Announcement</button>
+      <button class="admin-tab-btn" data-panel="requestsPanel">Requests</button>
+      <button class="admin-tab-btn" data-panel="signupsPanel">Sign-ups</button>
     </div>
 
     <!-- INSPIRATION PANEL -->
@@ -84,6 +86,19 @@
         <button type="submit" class="btn btn-gold">Save Announcement</button>
         <p class="admin-note" id="announcementNote"></p>
       </form>
+    </div>
+
+    <!-- REQUESTS PANEL -->
+    <div class="admin-panel" id="requestsPanel">
+      <h3 class="admin-subheading">Member requests</h3>
+      <p class="admin-note" style="margin-bottom:16px;">Requests members leave from the Inspiration section.</p>
+      <div id="requestsList" class="recent-list"></div>
+    </div>
+
+    <!-- SIGN-UPS PANEL -->
+    <div class="admin-panel" id="signupsPanel">
+      <h3 class="admin-subheading">Join Fellowship sign-ups</h3>
+      <div id="signupsList" class="recent-list"></div>
     </div>
 
   </div>
