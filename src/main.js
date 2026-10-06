@@ -344,10 +344,7 @@ if (signupForm) {
       return
     }
 
-    const fellowshipNumber = '2349032592862'
-    const message = encodeURIComponent(`Hi! My name is ${name}. I'd like to join JML Fellowship. My WhatsApp number is ${whatsapp}.`)
-    window.open(`https://wa.me/${fellowshipNumber}?text=${message}`, '_blank')
-    document.getElementById('signupNote').textContent = "Thanks! We've saved your details and opened WhatsApp so you can message us directly."
+    document.getElementById('signupNote').textContent = "Thanks! We've saved your details. We'll be in touch on WhatsApp soon."
     signupForm.reset()
   })
 }
