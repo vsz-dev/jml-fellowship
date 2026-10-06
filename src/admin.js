@@ -302,8 +302,19 @@ async function loadSignups() {
         'Birthday: ' + dob + '<br>' +
         'Favourite scripture: ' + scripture +
       '</div>' +
+      '<div class="recent-item-actions">' +
+        '<button data-delete-signup-id="' + s.id + '">Delete</button>' +
+      '</div>' +
     '</div>'
   }).join('')
+
+  document.querySelectorAll('[data-delete-signup-id]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      if (!confirm('Delete this sign-up?')) return
+      await supabase.from('signups').delete().eq('id', btn.dataset.deleteSignupId)
+      loadSignups()
+    })
+  })
 }
 
 checkSession()
