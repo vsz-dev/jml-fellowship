@@ -311,7 +311,12 @@ async function loadSignups() {
   document.querySelectorAll('[data-delete-signup-id]').forEach(function (btn) {
     btn.addEventListener('click', async function () {
       if (!confirm('Delete this sign-up?')) return
-      await supabase.from('signups').delete().eq('id', btn.dataset.deleteSignupId)
+      const { error } = await supabase.from('signups').delete().eq('id', btn.dataset.deleteSignupId)
+      if (error) {
+        console.error('Delete failed:', error)
+        alert('Could not delete: ' + error.message)
+        return
+      }
       loadSignups()
     })
   })
