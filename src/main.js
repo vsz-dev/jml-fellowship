@@ -414,9 +414,35 @@ async function enableNotifications() {
   btn.disabled = true
 }
 
+async function refreshNotifButtonState() {
+  const btn = document.getElementById('enableNotifBtn')
+  if (!btn) return
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+
+  if (Notification.permission !== 'granted') {
+    btn.textContent = '🔔 Enable Notification'
+    btn.disabled = false
+    return
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+    if (subscription) {
+      btn.textContent = '🔔 Notifications On'
+      btn.disabled = true
+    } else {
+      btn.textContent = '🔔 Enable Notification'
+      btn.disabled = false
+    }
+  } catch (e) {
+    console.error('Could not check notification state:', e)
+  }
+}
+
 const notifBtn = document.getElementById('enableNotifBtn')
 if (notifBtn) notifBtn.addEventListener('click', enableNotifications)
-registerServiceWorker()
+registerServiceWorker().then(refreshNotifButtonState)
 
 loadWordOfMonth()
 initPrayerArchive()
