@@ -396,6 +396,12 @@ async function enableNotifications() {
     })
   }
 
+  await saveSubscription(subscription)
+  btn.textContent = '🔔 Notifications On'
+  btn.disabled = true
+}
+
+async function saveSubscription(subscription) {
   const sub = subscription.toJSON()
   const { error } = await supabase
     .from('push_subscriptions')
@@ -404,14 +410,7 @@ async function enableNotifications() {
       p256dh: sub.keys.p256dh,
       auth: sub.keys.auth
     }, { onConflict: 'endpoint' })
-
-  if (error) {
-    console.error('Could not save subscription:', error)
-    return
-  }
-
-  btn.textContent = '🔔 Notifications On'
-  btn.disabled = true
+  if (error) console.error('Could not save subscription:', error)
 }
 
 async function refreshNotifButtonState() {
@@ -427,16 +426,26 @@ async function refreshNotifButtonState() {
 
   try {
     const registration = await navigator.serviceWorker.ready
-    const subscription = await registration.pushManager.getSubscription()
-    if (subscription) {
-      btn.textContent = '🔔 Notifications On'
-      btn.disabled = true
-    } else {
-      btn.textContent = '🔔 Enable Notification'
-      btn.disabled = false
+    let subscription = await registration.pushManager.getSubscription()
+
+    // Permission was already granted before, but the phone/OS may have
+    // silently killed the old subscription in the background. Since
+    // permission is already granted, re-subscribing needs no popup —
+    // this quietly repairs a dead connection every time the site opens.
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      })
     }
+
+    await saveSubscription(subscription)
+    btn.textContent = '🔔 Notifications On'
+    btn.disabled = true
   } catch (e) {
-    console.error('Could not check notification state:', e)
+    console.error('Could not refresh notification subscription:', e)
+    btn.textContent = '🔔 Enable Notification'
+    btn.disabled = false
   }
 }
 
