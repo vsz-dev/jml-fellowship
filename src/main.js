@@ -264,6 +264,53 @@ document.getElementById('requestForm').addEventListener('submit', async function
   document.getElementById('requestForm').reset()
 })
 
+// ---------- Videos ----------
+function getVideoEmbedUrl(url) {
+  let match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/)
+  if (match) return 'https://www.youtube.com/embed/' + match[1]
+
+  match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (match) return 'https://player.vimeo.com/video/' + match[1]
+
+  return null
+}
+
+async function loadVideos() {
+  const container = document.getElementById('videoList')
+  if (!container) return
+
+  const { data, error } = await supabase
+    .from('videos')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="section-desc">No videos posted yet. Check back soon.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (v) {
+    const desc = v.description ? '<p class="video-desc">' + v.description + '</p>' : ''
+    let player
+
+    if (v.video_type === 'upload') {
+      player = '<video class="video-player" controls preload="metadata" src="' + v.video_url + '"></video>'
+    } else {
+      const embedUrl = getVideoEmbedUrl(v.video_url)
+      player = embedUrl
+        ? '<div class="video-embed-wrap"><iframe src="' + embedUrl + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+        : '<a class="btn btn-outline" href="' + v.video_url + '" target="_blank" rel="noopener">Watch video &rarr;</a>'
+    }
+
+    return '<div class="video-card">' +
+      '<h3 class="video-title">' + v.title + '</h3>' +
+      player +
+      desc +
+    '</div>'
+  }).join('')
+}
+
 // ---------- Purpose & Vision / Announcement modals ----------
 let siteContent = {}
 
@@ -456,4 +503,5 @@ registerServiceWorker().then(refreshNotifButtonState)
 loadWordOfMonth()
 initPrayerArchive()
 loadInspirations()
+loadVideos()
 loadSiteContent()

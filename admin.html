@@ -35,6 +35,7 @@
 
     <div class="admin-tabs">
       <button class="admin-tab-btn active" data-panel="inspirationPanel">Inspiration</button>
+      <button class="admin-tab-btn" data-panel="videosPanel">Videos</button>
       <button class="admin-tab-btn" data-panel="wordPanel">Word of the Month</button>
       <button class="admin-tab-btn" data-panel="purposePanel">Purpose &amp; Vision</button>
       <button class="admin-tab-btn" data-panel="announcementPanel">Announcement</button>
@@ -54,6 +55,31 @@
 
       <h3 class="admin-subheading">Recently posted</h3>
       <div id="recentList" class="recent-list"></div>
+    </div>
+
+    <!-- VIDEOS PANEL -->
+    <div class="admin-panel" id="videosPanel">
+      <form id="videoForm">
+        <label>Title<input type="text" id="videoTitle" required placeholder="e.g. Sunday Service Highlights"></label>
+        <label>Description (optional)<textarea id="videoDescription" rows="3" placeholder="Short description of the video..."></textarea></label>
+        <label>Video source
+          <select id="videoSourceType">
+            <option value="link">YouTube / Vimeo link</option>
+            <option value="upload">Upload video file</option>
+          </select>
+        </label>
+        <div id="videoLinkField">
+          <label>Video URL<input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..."></label>
+        </div>
+        <div id="videoUploadField" style="display:none;">
+          <label>Video file<input type="file" id="videoFile" accept="video/*"></label>
+        </div>
+        <button type="submit" class="btn btn-gold" id="videoSubmitBtn">Post video</button>
+        <p class="admin-note" id="videoNote"></p>
+      </form>
+
+      <h3 class="admin-subheading">Recently posted</h3>
+      <div id="videosList" class="recent-list"></div>
     </div>
 
     <!-- WORD OF THE MONTH PANEL -->

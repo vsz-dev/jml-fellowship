@@ -23,6 +23,7 @@ function showDashboard() {
   loadSiteContentIntoForm('announcement', 'announcementTitleInput', 'announcementBodyInput')
   loadRequests()
   loadSignups()
+  loadVideos()
 }
 
 document.getElementById('loginForm').addEventListener('submit', async function (e) {
@@ -318,6 +319,117 @@ async function loadSignups() {
         return
       }
       loadSignups()
+    })
+  })
+}
+
+// ---------- Videos ----------
+const videoSourceType = document.getElementById('videoSourceType')
+if (videoSourceType) {
+  videoSourceType.addEventListener('change', function () {
+    const isUpload = this.value === 'upload'
+    document.getElementById('videoLinkField').style.display = isUpload ? 'none' : 'block'
+    document.getElementById('videoUploadField').style.display = isUpload ? 'block' : 'none'
+  })
+}
+
+document.getElementById('videoForm').addEventListener('submit', async function (e) {
+  e.preventDefault()
+  const title = document.getElementById('videoTitle').value.trim()
+  const description = document.getElementById('videoDescription').value.trim()
+  const sourceType = document.getElementById('videoSourceType').value
+  const note = document.getElementById('videoNote')
+  const submitBtn = document.getElementById('videoSubmitBtn')
+
+  let videoUrl = ''
+
+  if (sourceType === 'link') {
+    videoUrl = document.getElementById('videoUrl').value.trim()
+    if (!videoUrl) {
+      note.textContent = 'Please paste a YouTube or Vimeo link.'
+      return
+    }
+  } else {
+    const file = document.getElementById('videoFile').files[0]
+    if (!file) {
+      note.textContent = 'Please choose a video file to upload.'
+      return
+    }
+
+    submitBtn.disabled = true
+    note.textContent = 'Uploading video... this may take a while depending on the file size and your connection.'
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + fileExt
+
+    const { error: uploadError } = await supabase.storage.from('videos').upload(fileName, file)
+    if (uploadError) {
+      note.textContent = 'Upload failed: ' + uploadError.message
+      submitBtn.disabled = false
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName)
+    videoUrl = urlData.publicUrl
+  }
+
+  const { error } = await supabase
+    .from('videos')
+    .insert({
+      title: title,
+      description: description || null,
+      video_type: sourceType,
+      video_url: videoUrl
+    })
+
+  submitBtn.disabled = false
+
+  if (error) {
+    note.textContent = 'Something went wrong: ' + error.message
+    return
+  }
+
+  note.textContent = 'Posted! It will now show on the website.'
+  document.getElementById('videoForm').reset()
+  document.getElementById('videoLinkField').style.display = 'block'
+  document.getElementById('videoUploadField').style.display = 'none'
+  loadVideos()
+  sendNotification('New Video — JML Fellowship', title, '/#videos')
+})
+
+async function loadVideos() {
+  const { data, error } = await supabase
+    .from('videos')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  const container = document.getElementById('videosList')
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="admin-note">No videos posted yet.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (v) {
+    const typeLabel = v.video_type === 'upload' ? 'Uploaded file' : 'Link'
+    return '<div class="recent-item">' +
+      '<div class="recent-item-text"><strong>' + v.title + '</strong> &middot; ' + typeLabel + '</div>' +
+      '<div class="recent-item-actions">' +
+        '<button data-delete-video-id="' + v.id + '">Delete</button>' +
+      '</div>' +
+    '</div>'
+  }).join('')
+
+  document.querySelectorAll('[data-delete-video-id]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      if (!confirm('Delete this video?')) return
+      const { error } = await supabase.from('videos').delete().eq('id', btn.dataset.deleteVideoId)
+      if (error) {
+        console.error('Delete failed:', error)
+        alert('Could not delete: ' + error.message)
+        return
+      }
+      loadVideos()
     })
   })
 }
