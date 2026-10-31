@@ -411,11 +411,97 @@ async function openVideoModal(id) {
   document.getElementById('videoModalViews').textContent = formatViews(v.view_count)
   document.getElementById('videoCommentForm').reset()
   document.getElementById('videoCommentNote').textContent = ''
+  setupShareLinks(v)
   document.getElementById('videoModal').classList.add('active')
 
   recordVideoView(id)
   await loadVideoReactions(id)
   await loadVideoComments(id)
+}
+
+// ---------- Sharing a video ----------
+// true  = shared links go through /api/share, so chat apps show the video's title and thumbnail
+// false = shared links are plain site links (/?video=...) that open the video, with no custom preview
+const USE_PREVIEW_LINKS = true
+
+function videoShareUrl(id) {
+  return location.origin + (USE_PREVIEW_LINKS ? '/api/share?v=' + id : '/?video=' + id + '#videos')
+}
+
+function videoShareText(v) {
+  return 'Watch "' + v.title + '" - Jesus My Light Fellowship'
+}
+
+function setupShareLinks(v) {
+  const url = videoShareUrl(v.id)
+  const text = videoShareText(v)
+  const enc = encodeURIComponent
+
+  document.getElementById('shareWhatsapp').href = 'https://wa.me/?text=' + enc(text + ' ' + url)
+  document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + enc(url)
+  document.getElementById('shareX').href = 'https://twitter.com/intent/tweet?text=' + enc(text) + '&url=' + enc(url)
+  document.getElementById('shareSnapchat').href = 'https://www.snapchat.com/scan?attachmentUrl=' + enc(url)
+  document.getElementById('shareTelegram').href = 'https://t.me/share/url?url=' + enc(url) + '&text=' + enc(text)
+  document.getElementById('shareCopy').textContent = 'Copy link'
+}
+
+document.getElementById('shareCopy').addEventListener('click', async function () {
+  const v = videosById[currentVideoId]
+  if (!v) return
+  const url = videoShareUrl(v.id)
+  const btn = this
+
+  let copied = false
+  try {
+    await navigator.clipboard.writeText(url)
+    copied = true
+  } catch (e) {
+    try {
+      const box = document.createElement('textarea')
+      box.value = url
+      box.style.position = 'fixed'
+      box.style.opacity = '0'
+      document.body.appendChild(box)
+      box.select()
+      copied = document.execCommand('copy')
+      document.body.removeChild(box)
+    } catch (e2) {}
+  }
+
+  if (!copied) {
+    window.prompt('Copy this link:', url)
+    return
+  }
+  btn.textContent = 'Link copied!'
+  setTimeout(function () { btn.textContent = 'Copy link' }, 2000)
+})
+
+// phones and many computers have their own share menu (it includes Instagram, TikTok, Messages...)
+const shareNativeBtn = document.getElementById('shareNative')
+if (navigator.share) {
+  shareNativeBtn.style.display = ''
+  shareNativeBtn.addEventListener('click', async function () {
+    const v = videosById[currentVideoId]
+    if (!v) return
+    try {
+      await navigator.share({ title: v.title, text: videoShareText(v), url: videoShareUrl(v.id) })
+    } catch (e) {
+      // the person closed the share menu - nothing to do
+    }
+  })
+}
+
+// open the right video when someone arrives from a shared link (/?video=<id>)
+async function openVideoFromLink() {
+  const id = new URLSearchParams(location.search).get('video')
+  if (!id) return
+
+  if (!videosById[id]) {
+    const { data, error } = await supabase.from('videos').select('*').eq('id', id).maybeSingle()
+    if (error || !data) return
+    videosById[id] = data
+  }
+  openVideoModal(id)
 }
 
 // ---------- Video views (counted once per device per video) ----------
@@ -559,6 +645,10 @@ function closeModal(modalEl) {
   if (modalEl.id === 'videoModal') {
     document.getElementById('videoModalPlayer').innerHTML = ''
     currentVideoId = null
+    // drop "?video=..." from the address bar so a refresh doesn't reopen it
+    if (location.search.indexOf('video=') !== -1) {
+      history.replaceState(null, '', location.pathname + location.hash)
+    }
   }
 }
 
@@ -732,5 +822,5 @@ registerServiceWorker().then(refreshNotifButtonState)
 loadWordOfMonth()
 initPrayerArchive()
 loadInspirations()
-loadVideos()
+loadVideos().then(openVideoFromLink)
 loadSiteContent()

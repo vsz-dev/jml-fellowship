@@ -615,7 +615,8 @@
     .modal-box.modal-box-video { padding: 44px 12px 24px; }
     .modal-box-video .modal-title { padding-left: 4px; }
     .modal-box-video .video-meta, .modal-box-video .modal-body, .modal-box-video .reaction-row,
-    .modal-box-video .modal-subheading, .modal-box-video .comment-list, .modal-box-video .comment-form { margin-left: 4px; margin-right: 4px; }
+    .modal-box-video .modal-subheading, .modal-box-video .comment-list, .modal-box-video .comment-form,
+    .modal-box-video .share-row { margin-left: 4px; margin-right: 4px; }
   }
 
   /* ---------- MODALS ---------- */
@@ -670,6 +671,24 @@
   }
   .reaction-btn:hover, .video-reaction-btn:hover { background: rgba(215,172,87,0.18); transform: translateY(-1px); }
   .reaction-btn.reacted, .video-reaction-btn.reacted { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+
+  .share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 18px 0 4px; }
+  .share-label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted-on-navy); margin-right: 4px; }
+  .share-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(215,172,87,0.3);
+    color: var(--text-on-navy);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .share-btn:hover { background: rgba(215,172,87,0.18); transform: translateY(-1px); }
 
   .modal-divider { height: 1px; background: rgba(215,172,87,0.18); margin: 26px 0; }
   .modal-subheading { font-family: var(--font-display); font-size: 1.05rem; color: var(--text-on-navy); margin: 0 0 14px; }
