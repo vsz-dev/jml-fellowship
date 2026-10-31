@@ -145,6 +145,33 @@
   </div>
 </section>
 
+<div class="modal-overlay" id="videoModal">
+  <div class="modal-box modal-box-wide modal-box-video">
+    <button class="modal-close" data-close-modal>&times;</button>
+    <h3 class="modal-title" id="videoModalTitle">Video</h3>
+    <div id="videoModalPlayer"></div>
+    <p class="video-meta" id="videoModalViews"></p>
+    <div class="modal-body" id="videoModalDesc"></div>
+
+    <div class="reaction-row" id="videoReactionRow">
+      <button class="video-reaction-btn" data-vreaction="like">👍 <span id="vCountLike">0</span></button>
+      <button class="video-reaction-btn" data-vreaction="heart">❤️ <span id="vCountHeart">0</span></button>
+      <button class="video-reaction-btn" data-vreaction="amen">🙏 <span id="vCountAmen">0</span></button>
+    </div>
+
+    <div class="modal-divider"></div>
+
+    <h4 class="modal-subheading">Comments</h4>
+    <div class="comment-list" id="videoCommentList"></div>
+    <form class="comment-form" id="videoCommentForm">
+      <input type="text" id="videoCommentName" placeholder="Your name" maxlength="60" required>
+      <textarea id="videoCommentText" rows="2" placeholder="Leave a comment..." maxlength="1000" required></textarea>
+      <button type="submit" class="btn btn-gold btn-small">Post comment</button>
+      <p class="admin-note" id="videoCommentNote"></p>
+    </form>
+  </div>
+</div>
+
 <section id="prayer" class="about-band">
   <div class="wrap">
     <div class="section-head">

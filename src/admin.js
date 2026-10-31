@@ -1,6 +1,16 @@
 import './style.css'
 import { supabase } from './supabaseClient.js'
 
+// make text safe to place inside HTML (visitors can type anything into the public forms)
+function escapeHtml(text) {
+  return String(text == null ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const loginSection = document.getElementById('loginSection')
 const dashboardSection = document.getElementById('dashboardSection')
 
@@ -258,10 +268,10 @@ async function loadRequests() {
   }
 
   container.innerHTML = data.map(function (r) {
-    const name = r.name ? r.name : 'Anonymous'
+    const name = r.name ? escapeHtml(r.name) : 'Anonymous'
     const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     return '<div class="recent-item">' +
-      '<div class="recent-item-text"><strong>' + name + '</strong> &middot; ' + date + '<br>' + r.request + '</div>' +
+      '<div class="recent-item-text"><strong>' + name + '</strong> &middot; ' + date + '<br>' + escapeHtml(r.request) + '</div>' +
       '<div class="recent-item-actions"><button data-delete-request-id="' + r.id + '">Delete</button></div>' +
     '</div>'
   }).join('')
@@ -293,12 +303,12 @@ async function loadSignups() {
 
   container.innerHTML = data.map(function (s) {
     const dob = (s.dob_month && s.dob_day) ? (MONTH_NAMES[s.dob_month] + ' ' + s.dob_day) : 'Not provided'
-    const scripture = s.favorite_scripture ? s.favorite_scripture : 'Not provided'
-    const email = s.email ? s.email : 'Not provided'
+    const scripture = s.favorite_scripture ? escapeHtml(s.favorite_scripture) : 'Not provided'
+    const email = s.email ? escapeHtml(s.email) : 'Not provided'
     return '<div class="recent-item">' +
       '<div class="recent-item-text">' +
-        '<strong>' + s.full_name + '</strong><br>' +
-        'WhatsApp: ' + s.whatsapp_number + '<br>' +
+        '<strong>' + escapeHtml(s.full_name) + '</strong><br>' +
+        'WhatsApp: ' + escapeHtml(s.whatsapp_number) + '<br>' +
         'Email: ' + email + '<br>' +
         'Birthday: ' + dob + '<br>' +
         'Favourite scripture: ' + scripture +
@@ -412,8 +422,10 @@ async function loadVideos() {
 
   container.innerHTML = data.map(function (v) {
     const typeLabel = v.video_type === 'upload' ? 'Uploaded file' : 'Link'
+    const views = v.view_count || 0
     return '<div class="recent-item">' +
-      '<div class="recent-item-text"><strong>' + v.title + '</strong> &middot; ' + typeLabel + '</div>' +
+      '<div class="recent-item-text"><strong>' + escapeHtml(v.title) + '</strong> &middot; ' + typeLabel +
+        ' &middot; 👁 ' + views + (views === 1 ? ' view' : ' views') + '</div>' +
       '<div class="recent-item-actions">' +
         '<button data-delete-video-id="' + v.id + '">Delete</button>' +
       '</div>' +

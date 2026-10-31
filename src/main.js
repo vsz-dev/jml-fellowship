@@ -22,6 +22,16 @@ function formatParagraphs(text) {
     .join('')
 }
 
+// make text safe to place inside HTML (used for anything visitors type in)
+function escapeHtml(text) {
+  return String(text == null ? '' : text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // ---------- Word of the month ----------
 async function loadWordOfMonth() {
   const { data, error } = await supabase
@@ -216,7 +226,7 @@ async function loadComments(inspirationId) {
   }
 
   container.innerHTML = data.map(function (c) {
-    return '<div class="comment-item"><p class="comment-name">' + c.name + '</p><p class="comment-text">' + c.comment + '</p></div>'
+    return '<div class="comment-item"><p class="comment-name">' + escapeHtml(c.name) + '</p><p class="comment-text">' + escapeHtml(c.comment) + '</p></div>'
   }).join('')
 }
 
@@ -265,14 +275,85 @@ document.getElementById('requestForm').addEventListener('submit', async function
 })
 
 // ---------- Videos ----------
-function getVideoEmbedUrl(url) {
-  let match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/)
-  if (match) return 'https://www.youtube.com/embed/' + match[1]
+let videosById = {}
+let currentVideoId = null
 
-  match = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
-  if (match) return 'https://player.vimeo.com/video/' + match[1]
+// work out how to show a posted video: YouTube, Vimeo, Instagram, Facebook, an uploaded file, or a plain link
+function getVideoInfo(v) {
+  if (v.video_type === 'upload') return { kind: 'upload', src: v.video_url }
 
-  return null
+  const url = (v.video_url || '').trim()
+  let m
+
+  m = url.match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{6,})/)
+  if (m) {
+    return {
+      kind: 'youtube',
+      src: 'https://www.youtube.com/embed/' + m[1],
+      thumb: 'https://img.youtube.com/vi/' + m[1] + '/hqdefault.jpg'
+    }
+  }
+
+  m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (m) return { kind: 'vimeo', src: 'https://player.vimeo.com/video/' + m[1] }
+
+  m = url.match(/instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/)
+  if (m) {
+    const type = m[1] === 'reels' ? 'reel' : m[1]
+    return { kind: 'instagram', layout: 'portrait', src: 'https://www.instagram.com/' + type + '/' + m[2] + '/embed/captioned/' }
+  }
+
+  if (/facebook\.com|fb\.watch|fb\.com/.test(url)) {
+    const encoded = encodeURIComponent(url)
+    const isReel = /\/reel\/|\/share\/r\//.test(url)
+    const isVideo = isReel || /\/videos\/|\/watch|fb\.watch|\/share\/v\//.test(url)
+    if (isVideo) {
+      return {
+        kind: 'facebook',
+        layout: isReel ? 'portrait' : 'wide',
+        src: 'https://www.facebook.com/plugins/video.php?href=' + encoded + '&show_text=false&width=560'
+      }
+    }
+    return {
+      kind: 'facebook',
+      layout: 'portrait',
+      src: 'https://www.facebook.com/plugins/post.php?href=' + encoded + '&show_text=true&width=500'
+    }
+  }
+
+  return { kind: 'link', src: url }
+}
+
+const VIDEO_LABELS = { youtube: 'YouTube', vimeo: 'Vimeo', instagram: 'Instagram', facebook: 'Facebook', link: 'Video' }
+
+function formatViews(n) {
+  const count = n || 0
+  return '👁 ' + count + (count === 1 ? ' view' : ' views')
+}
+
+function videoThumbHtml(info) {
+  if (info.kind === 'youtube') {
+    return '<img src="' + escapeHtml(info.thumb) + '" alt="" loading="lazy">'
+  }
+  if (info.kind === 'upload') {
+    return '<video src="' + escapeHtml(info.src) + '#t=0.5" preload="metadata" muted playsinline></video>'
+  }
+  return '<div class="video-thumb-placeholder ' + info.kind + '"><span>' + (VIDEO_LABELS[info.kind] || 'Video') + '</span></div>'
+}
+
+function videoPlayerHtml(info, v) {
+  if (info.kind === 'upload') {
+    return '<video class="video-player" controls playsinline preload="metadata" src="' + escapeHtml(info.src) + '"></video>'
+  }
+  if (info.kind === 'link') {
+    if (!/^https?:\/\//i.test(info.src)) return '<p class="comment-empty">This video link could not be opened.</p>'
+    return '<a class="btn btn-outline-modal" href="' + escapeHtml(info.src) + '" target="_blank" rel="noopener">Open video &rarr;</a>'
+  }
+  const wrapClass = info.layout === 'portrait' ? 'video-embed-portrait' : 'video-embed-wrap'
+  return '<div class="' + wrapClass + '">' +
+    '<iframe src="' + escapeHtml(info.src) + '" title="' + escapeHtml(v.title) + '" ' +
+    'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+    'allowfullscreen loading="lazy"></iframe></div>'
 }
 
 async function loadVideos() {
@@ -290,26 +371,169 @@ async function loadVideos() {
     return
   }
 
+  videosById = {}
+  data.forEach(function (v) { videosById[v.id] = v })
+
   container.innerHTML = data.map(function (v) {
-    const desc = v.description ? '<p class="video-desc">' + v.description + '</p>' : ''
-    let player
-
-    if (v.video_type === 'upload') {
-      player = '<video class="video-player" controls preload="metadata" src="' + v.video_url + '"></video>'
-    } else {
-      const embedUrl = getVideoEmbedUrl(v.video_url)
-      player = embedUrl
-        ? '<div class="video-embed-wrap"><iframe src="' + embedUrl + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
-        : '<a class="btn btn-outline" href="' + v.video_url + '" target="_blank" rel="noopener">Watch video &rarr;</a>'
-    }
-
-    return '<div class="video-card">' +
-      '<h3 class="video-title">' + v.title + '</h3>' +
-      player +
-      desc +
+    const info = getVideoInfo(v)
+    const desc = v.description ? '<p class="video-desc-preview">' + escapeHtml(v.description) + '</p>' : ''
+    return '<div class="video-card" data-video-id="' + escapeHtml(v.id) + '" role="button" tabindex="0">' +
+      '<div class="video-thumb">' + videoThumbHtml(info) + '<span class="video-play"></span></div>' +
+      '<div class="video-card-body">' +
+        '<h3 class="video-title">' + escapeHtml(v.title) + '</h3>' +
+        '<p class="video-meta" data-views-for="' + escapeHtml(v.id) + '">' + formatViews(v.view_count) + '</p>' +
+        desc +
+      '</div>' +
     '</div>'
   }).join('')
+
+  container.querySelectorAll('.video-card').forEach(function (card) {
+    card.addEventListener('click', function () { openVideoModal(card.dataset.videoId) })
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        openVideoModal(card.dataset.videoId)
+      }
+    })
+  })
 }
+
+async function openVideoModal(id) {
+  const v = videosById[id]
+  if (!v) return
+
+  currentVideoId = id
+  const info = getVideoInfo(v)
+
+  document.getElementById('videoModalTitle').textContent = v.title
+  document.getElementById('videoModalPlayer').innerHTML = videoPlayerHtml(info, v)
+  document.getElementById('videoModalDesc').innerHTML = v.description ? formatParagraphs(escapeHtml(v.description)) : ''
+  document.getElementById('videoModalViews').textContent = formatViews(v.view_count)
+  document.getElementById('videoCommentForm').reset()
+  document.getElementById('videoCommentNote').textContent = ''
+  document.getElementById('videoModal').classList.add('active')
+
+  recordVideoView(id)
+  await loadVideoReactions(id)
+  await loadVideoComments(id)
+}
+
+// ---------- Video views (counted once per device per video) ----------
+async function recordVideoView(id) {
+  const key = 'viewed_video_' + id
+  try { if (localStorage.getItem(key)) return } catch (e) {}
+
+  const { data, error } = await supabase.rpc('increment_video_view', { vid: id })
+  if (error) {
+    console.error('Could not record view:', error)
+    return
+  }
+  try { localStorage.setItem(key, 'true') } catch (e) {}
+
+  if (typeof data === 'number') {
+    if (videosById[id]) videosById[id].view_count = data
+    document.querySelectorAll('[data-views-for="' + id + '"]').forEach(function (el) {
+      el.textContent = formatViews(data)
+    })
+    if (currentVideoId === id) {
+      document.getElementById('videoModalViews').textContent = formatViews(data)
+    }
+  }
+}
+
+// ---------- Video reactions ----------
+async function loadVideoReactions(id) {
+  const { data, error } = await supabase
+    .from('video_reactions')
+    .select('reaction_type')
+    .eq('video_id', id)
+
+  if (currentVideoId !== id) return
+
+  const counts = { like: 0, heart: 0, amen: 0 }
+  if (!error && data) {
+    data.forEach(function (r) {
+      if (counts[r.reaction_type] !== undefined) counts[r.reaction_type]++
+    })
+  }
+
+  document.getElementById('vCountLike').textContent = counts.like
+  document.getElementById('vCountHeart').textContent = counts.heart
+  document.getElementById('vCountAmen').textContent = counts.amen
+
+  document.querySelectorAll('.video-reaction-btn').forEach(function (btn) {
+    let reacted = false
+    try { reacted = !!localStorage.getItem('vreacted_' + id + '_' + btn.dataset.vreaction) } catch (e) {}
+    btn.classList.toggle('reacted', reacted)
+  })
+}
+
+document.querySelectorAll('.video-reaction-btn').forEach(function (btn) {
+  btn.addEventListener('click', async function () {
+    if (!currentVideoId) return
+    const id = currentVideoId
+    const type = btn.dataset.vreaction
+    const key = 'vreacted_' + id + '_' + type
+
+    try { if (localStorage.getItem(key)) return } catch (e) {}
+
+    const { error } = await supabase
+      .from('video_reactions')
+      .insert({ video_id: id, reaction_type: type })
+
+    if (error) {
+      console.error('Could not save reaction:', error)
+      return
+    }
+    try { localStorage.setItem(key, 'true') } catch (e) {}
+    if (currentVideoId === id) await loadVideoReactions(id)
+  })
+})
+
+// ---------- Video comments ----------
+async function loadVideoComments(id) {
+  const { data, error } = await supabase
+    .from('video_comments')
+    .select('*')
+    .eq('video_id', id)
+    .order('created_at', { ascending: true })
+
+  if (currentVideoId !== id) return
+
+  const container = document.getElementById('videoCommentList')
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<p class="comment-empty">No comments yet. Be the first to share a thought.</p>'
+    return
+  }
+
+  container.innerHTML = data.map(function (c) {
+    return '<div class="comment-item"><p class="comment-name">' + escapeHtml(c.name) + '</p><p class="comment-text">' + escapeHtml(c.comment) + '</p></div>'
+  }).join('')
+}
+
+document.getElementById('videoCommentForm').addEventListener('submit', async function (e) {
+  e.preventDefault()
+  if (!currentVideoId) return
+
+  const id = currentVideoId
+  const name = document.getElementById('videoCommentName').value.trim()
+  const comment = document.getElementById('videoCommentText').value.trim()
+  const note = document.getElementById('videoCommentNote')
+
+  const { error } = await supabase
+    .from('video_comments')
+    .insert({ video_id: id, name: name, comment: comment })
+
+  if (error) {
+    console.error('Could not post comment:', error)
+    note.textContent = 'Something went wrong. Please try again.'
+    return
+  }
+
+  note.textContent = 'Comment posted!'
+  document.getElementById('videoCommentForm').reset()
+  if (currentVideoId === id) await loadVideoComments(id)
+})
 
 // ---------- Purpose & Vision / Announcement modals ----------
 let siteContent = {}
@@ -331,6 +555,11 @@ function openModal(key, modalId, titleId, bodyId, defaultTitle) {
 
 function closeModal(modalEl) {
   modalEl.classList.remove('active')
+  // stop any playing video/audio when the video popup is closed
+  if (modalEl.id === 'videoModal') {
+    document.getElementById('videoModalPlayer').innerHTML = ''
+    currentVideoId = null
+  }
 }
 
 document.getElementById('purposeNavBtn').addEventListener('click', function () {
